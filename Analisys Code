@@ -1,0 +1,100 @@
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot  as plt
+import datetime
+from datetime import timedelta, timezone, datetime
+from scipy.optimize import curve_fit
+
+name = '/content/M_413.csv'
+df = pd.read_csv(name, header = 0)
+df
+
+nome_arq = (name.split(".")[0])
+nome_arq = nome_arq.replace("/content/", "")
+nome_arq
+
+pos_treino = df.response_resp_log.size - 70
+pos_treino
+
+erros_treino = pos_treino - 20
+erros_treino
+
+perc_resp = pd.crosstab(df.response_resp_log[pos_treino:], df.tempo_log, margins=True, normalize = 'columns')
+perc_resp
+
+temp_estm = np.array([500.0, 630.0, 793.5, 1000.0, 1260.0, 1587.0, 2000])
+temp_estm
+
+perc_long = perc_resp[0:1].values
+perc_long = np.delete(perc_long,[7])
+perc_long 
+
+#Curve Ajustment (Sigmoid Curve)
+
+def sigmoid(x, a, b):
+    return 1.0 / (1.0 + np.exp(-a*(x-b)))
+
+popt, pcov = curve_fit(sigmoid, temp_estm, perc_long, method='dogbox', bounds=([0.,300.],[0.8,2300.]))
+
+#Bisection Point
+
+pont_bissec = round(popt[1],4)
+pont_bissec
+
+
+#Differential Threshold
+
+#0,25
+T1_ = popt[1] - (np.log(3)/popt[0])
+T1_
+
+#0,75
+T2_ = popt[1] + (np.log(3)/popt[0])
+T2_
+
+
+lim_dif_ = ((T2_-T1_)/2)
+lim_dif_
+
+#Weber's Ratio
+
+WR = (T2_-T1_)/pont_bissec
+WR
+
+#GRAPH COMMANDs
+
+rng = np.arange(temp_estm[0],temp_estm[-1],0.1)
+pont_bissec = round(popt[1],4)
+
+plt.figure(figsize = (15,10))
+plt.plot(temp_estm, perc_long, color='green', marker='o',linestyle = '',ms = 7)
+plt.plot(rng, sigmoid(rng, *popt), label="Ajusted Curve [Sigmoid]", linestyle =':',lw = 3)
+plt.ylabel('Proportion "Long" Responses',fontsize = 14)
+plt.xlabel('Temporal Duration (ms)',fontsize = 14)
+plt.xticks(temp_estm,temp_estm,fontsize = 12)
+plt.yticks(np.arange(0, 1.1, step=0.1), fontsize = 12)
+plt.legend(loc='upper left',fontsize = 14)
+plt.annotate(pont_bissec,
+            xy=(popt[1], 0.5), xycoords='data',
+            xytext=(popt[1]-47, 0.), textcoords=("data", "axes fraction"),
+            arrowprops=dict(arrowstyle="<-",connectionstyle="arc3"),
+            bbox=dict(boxstyle="round", fc="w"),fontsize=12
+            )
+plt.annotate(round(T1_,4),
+            xy=(T1_, 0.25), xycoords='data',
+            xytext=(T1_-200, 0.265), textcoords=("data", "axes fraction"),
+            arrowprops=dict(arrowstyle="<-",connectionstyle="arc3"),
+            bbox=dict(boxstyle="round", fc="w"),fontsize=12
+            )
+plt.annotate(round(T2_,4),
+            xy=(T2_, 0.75), xycoords='data',
+            xytext=(T2_+100, 0.72), textcoords=("data", "axes fraction"),
+            arrowprops=dict(arrowstyle="<-",connectionstyle="arc3"),
+            bbox=dict(boxstyle="round", fc="w"),fontsize=12
+            )
+
+plt.title('Ajusted Curve for the Temporal Bisection Task',fontsize = 18)
+plt.grid()
+
+plt.savefig('BISSEC_{0}'.format(nome_arq),dpi=1000, transparent=True,bbox_inches='tight')
+plt.show()

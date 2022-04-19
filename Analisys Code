@@ -44,11 +44,11 @@ pnt_bisec
 
 #Differential Threshold
 
-#0,25
+    #0,25
 T1_ = popt[1] - (np.log(3)/popt[0])
 T1_
 
-#0,75
+    #0,75
 T2_ = popt[1] + (np.log(3)/popt[0])
 T2_
 

@@ -71,7 +71,7 @@ plt.plot(time_stm, perc_long, color='green', marker='o',linestyle = '',ms = 7)
 plt.plot(rng, sigmoid(rng, *popt), label="Ajusted Curve [Sigmoid]", linestyle =':',lw = 3)
 plt.ylabel('Proportion "Long" Responses',fontsize = 14)
 plt.xlabel('Temporal Duration (ms)',fontsize = 14)
-plt.xticks(time_estm,time_stm,fontsize = 12)
+plt.xticks(time_stm,time_stm,fontsize = 12)
 plt.yticks(np.arange(0, 1.1, step=0.1), fontsize = 12)
 plt.legend(loc='upper left',fontsize = 14)
 plt.annotate(pnt_bisec,
